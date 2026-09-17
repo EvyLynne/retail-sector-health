@@ -1,0 +1,123 @@
+// ========================================================================
+// 08_assortment.dax
+// U.S. Retail Sector Health - display folder "08 Assortment"
+//
+// 10 measures. Build them in the order below; later ones
+// reference earlier ones and a missing dependency returns BLANK
+// rather than an error.
+//
+// HOME TABLE     _Measures
+// DISPLAY FOLDER 08 Assortment   (type it exactly, leading number included)
+// SOURCE         document 02 section 8. Generated from the same list
+//                that produces document 20's Measures tab.
+//
+// Every measure needs its format string and description set as well
+// as its expression - both are given with each one below.
+// ========================================================================
+
+
+// ---- New Items -----------------------------------------------------
+//   Items whose first movement falls in the visible period.
+//   Format      #,##0
+//   Depends on  -
+
+New Items =
+    CALCULATE ( COUNTROWS ( DimItem ),
+      FILTER ( ALL ( DimItem ), DimItem[FirstSeenDateKey] IN VALUES ( DimDate[DateKey] ) ) )
+
+// ---- Discontinued Items --------------------------------------------
+//   EXCLUDES the most recent loaded month. Every still-selling item
+//   carries that month as its last appearance, so an unfiltered count
+//   spikes at the right edge of every chart. Do not re-add that filter
+//   at visual level.
+//   Format      #,##0
+//   Depends on  -
+
+Discontinued Items =
+    VAR LastLoaded = CALCULATE ( MAX ( DimDate[DateKey] ), ALL ( DimDate ) )
+    RETURN CALCULATE ( COUNTROWS ( DimItem ),
+      FILTER ( ALL ( DimItem ), DimItem[LastSeenDateKey] IN VALUES ( DimDate[DateKey] )
+              && DimItem[LastSeenDateKey] <> LastLoaded ) )
+
+// ---- Net Assortment Change -----------------------------------------
+//   Positive: the assortment is expanding.
+//   Format      #,##0
+//   Depends on  Discontinued Items, New Items
+
+Net Assortment Change =
+    [New Items] - [Discontinued Items]
+
+// ---- Cohort Size ---------------------------------------------------
+//   Items introduced in the selected cohort year.
+//   Format      #,##0
+//   Depends on  -
+
+Cohort Size =
+    CALCULATE ( COUNTROWS ( DimItem ), ALLSELECTED ( DimItem[CohortYear] ) )
+
+// ---- Cohort Survival 12M % -----------------------------------------
+//   Share of a cohort with at least twelve months of movement. The
+//   2017 cohort is LEFT-CENSORED and is excluded from or labelled on
+//   every survival visual.
+//   Format      0.0%
+//   Depends on  -
+
+Cohort Survival 12M % =
+    DIVIDE ( CALCULATE ( COUNTROWS ( DimItem ), DimItem[MonthsActive] >= 12 ),
+             COUNTROWS ( DimItem ) )
+
+// ---- Cohort Survival 24M % -----------------------------------------
+//   Two-year survival.
+//   Format      0.0%
+//   Depends on  -
+
+Cohort Survival 24M % =
+    DIVIDE ( CALCULATE ( COUNTROWS ( DimItem ), DimItem[MonthsActive] >= 24 ),
+             COUNTROWS ( DimItem ) )
+
+// ---- Median Months Active ------------------------------------------
+//   Typical item tenure. Paired with the spec 8.5 binned distribution,
+//   which shows the shape the median hides.
+//   Format      #,##0
+//   Depends on  -
+
+Median Months Active =
+    MEDIANX ( DimItem, DimItem[MonthsActive] )
+
+// ---- Item Rank by Volume -------------------------------------------
+//   Ranking within the current filter context; the ordering basis of
+//   the Pareto.
+//   Format      #,##0
+//   Depends on  Total Cases
+
+Item Rank by Volume =
+    RANKX ( ALLSELECTED ( DimItem[ItemDescription] ), [Total Cases],, DESC, DENSE )
+
+// ---- Cumulative Cases % --------------------------------------------
+//   Pareto accumulation, secondary axis of spec 7.5. Validation check
+//   14: this must reach exactly 100% at the lowest-ranked item —
+//   falling short means the ranking context and the total context
+//   disagree, the most common defect in this pattern.
+//   Format      0.0%
+//   Depends on  Item Rank by Volume, Total Cases
+
+Cumulative Cases % =
+    VAR ThisRank = [Item Rank by Volume]
+    VAR Ranked = ADDCOLUMNS ( ALLSELECTED ( DimItem[ItemDescription] ),
+        "@rank", [Item Rank by Volume], "@vol", [Total Cases] )
+    RETURN DIVIDE ( SUMX ( FILTER ( Ranked, [@rank] <= ThisRank ), [@vol] ),
+                    SUMX ( Ranked, [@vol] ) )
+
+// ---- Items to 80% of Volume ----------------------------------------
+//   The long-tail headline: how few items carry most of the movement.
+//   Falling over time means the assortment is concentrating.
+//   Format      #,##0
+//   Depends on  Item Rank by Volume, Total Cases
+
+Items to 80% of Volume =
+    VAR Ranked = ADDCOLUMNS ( ALLSELECTED ( DimItem[ItemDescription] ),
+        "@rank", [Item Rank by Volume], "@vol", [Total Cases] )
+    VAR Total = SUMX ( Ranked, [@vol] )
+    VAR WithCum = ADDCOLUMNS ( Ranked, "@cum",
+        DIVIDE ( SUMX ( FILTER ( Ranked, [@rank] <= EARLIER ( [@rank] ) ), [@vol] ), Total ) )
+    RETURN COUNTROWS ( FILTER ( WithCum, [@cum] <= 0.8 ) )

@@ -1,0 +1,92 @@
+// ========================================================================
+// 01_macro.dax
+// U.S. Retail Sector Health - display folder "01 Macro"
+//
+// 8 measures. Build them in the order below; later ones
+// reference earlier ones and a missing dependency returns BLANK
+// rather than an error.
+//
+// HOME TABLE     _Measures
+// DISPLAY FOLDER 01 Macro   (type it exactly, leading number included)
+// SOURCE         document 02 section 8. Generated from the same list
+//                that produces document 20's Measures tab.
+//
+// Every measure needs its format string and description set as well
+// as its expression - both are given with each one below.
+// ========================================================================
+
+
+// ---- Macro Value ---------------------------------------------------
+//   Base aggregation. Meaningful ONLY under a single-series filter —
+//   the nine series carry different units and summing across them is
+//   nonsense.
+//   Format      #,##0.00
+//   Depends on  -
+
+Macro Value =
+    SUM ( FactMacro[Value] )
+
+// ---- Macro Value PM ------------------------------------------------
+//   Prior month. Feeds the KPI reference labels on R1 Page 1.
+//   Format      #,##0.00
+//   Depends on  Macro Value
+
+Macro Value PM =
+    CALCULATE ( [Macro Value], DATEADD ( DimDate[Date], -1, MONTH ) )
+
+// ---- Macro Value PY ------------------------------------------------
+//   Prior year, same month.
+//   Format      #,##0.00
+//   Depends on  Macro Value
+
+Macro Value PY =
+    CALCULATE ( [Macro Value], DATEADD ( DimDate[Date], -12, MONTH ) )
+
+// ---- CPI Index -----------------------------------------------------
+//   CPI level, index 1982-84 = 100. A LEVEL, not a rate — this is the
+//   deflator, not the inflation measure.
+//   Format      #,##0.0
+//   Depends on  Macro Value
+
+CPI Index =
+    CALCULATE ( [Macro Value], DimIndicator[SeriesId] = "CPIAUCSL" )
+
+// ---- CPI YoY % -----------------------------------------------------
+//   Inflation rate. Spec 1.1 and the secondary axis of spec 1.6.
+//   Format      0.0%
+//   Depends on  CPI Index
+
+CPI YoY % =
+    VAR Curr = [CPI Index]
+    VAR Prior = CALCULATE ( [CPI Index], DATEADD ( DimDate[Date], -12, MONTH ) )
+    RETURN DIVIDE ( Curr - Prior, Prior )
+
+// ---- Fed Funds Rate ------------------------------------------------
+//   Policy rate, already a percentage in the source. X variable of
+//   Rate Sensitivity Beta.
+//   Format      0.00%
+//   Depends on  Macro Value
+
+Fed Funds Rate =
+    CALCULATE ( [Macro Value], DimIndicator[SeriesId] = "FEDFUNDS" )
+
+// ---- Consumer Sentiment --------------------------------------------
+//   University of Michigan index, 1966:Q1 = 100. Enters the stress
+//   composite with its sign REVERSED.
+//   Format      #,##0.0
+//   Depends on  Macro Value
+
+Consumer Sentiment =
+    CALCULATE ( [Macro Value], DimIndicator[SeriesId] = "UMCSENT" )
+
+// ---- Macro Indexed to 100 ------------------------------------------
+//   Rebases any series to 100 at the first VISIBLE month. This is what
+//   lets a percentage, an index and a dollar series share one axis on
+//   spec 1.5.
+//   Format      #,##0
+//   Depends on  Macro Value
+
+Macro Indexed to 100 =
+    VAR BaseDate = CALCULATE ( MIN ( DimDate[Date] ), ALLSELECTED ( DimDate ) )
+    VAR BaseValue = CALCULATE ( [Macro Value], DimDate[Date] = BaseDate )
+    RETURN DIVIDE ( [Macro Value], BaseValue ) * 100

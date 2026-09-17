@@ -1,0 +1,73 @@
+// ========================================================================
+// 07_rotation.dax
+// U.S. Retail Sector Health - display folder "07 Rotation"
+//
+// 5 measures. Build them in the order below; later ones
+// reference earlier ones and a missing dependency returns BLANK
+// rather than an error.
+//
+// HOME TABLE     _Measures
+// DISPLAY FOLDER 07 Rotation   (type it exactly, leading number included)
+// SOURCE         document 02 section 8. Generated from the same list
+//                that produces document 20's Measures tab.
+//
+// Every measure needs its format string and description set as well
+// as its expression - both are given with each one below.
+// ========================================================================
+
+
+// ---- E-commerce Share % --------------------------------------------
+//   Electronic shopping and mail-order houses as a share of total
+//   retail. The structural trend of the period.
+//   Format      0.0%
+//   Depends on  Sector Sales, Total Retail and Food Services
+
+E-commerce Share % =
+    DIVIDE ( CALCULATE ( [Sector Sales], ALL ( DimCategory ), DimCategory[CategoryCode] = "4541" ),
+             [Total Retail and Food Services] )
+
+// ---- Department Store Share % --------------------------------------
+//   Plotted with the warehouse-club share on spec 6.6 — the transfer
+//   between the two is the story.
+//   Format      0.0%
+//   Depends on  Sector Sales, Total Retail and Food Services
+
+Department Store Share % =
+    DIVIDE ( CALCULATE ( [Sector Sales], ALL ( DimCategory ), DimCategory[CategoryCode] = "4522" ),
+             [Total Retail and Food Services] )
+
+// ---- Warehouse Club Share % ----------------------------------------
+//   Share gainer against department stores.
+//   Format      0.0%
+//   Depends on  Sector Sales, Total Retail and Food Services
+
+Warehouse Club Share % =
+    DIVIDE ( CALCULATE ( [Sector Sales], ALL ( DimCategory ), DimCategory[CategoryCode] = "452311" ),
+             [Total Retail and Food Services] )
+
+// ---- Goods to Services Ratio ---------------------------------------
+//   Retail trade against food services. Falls when consumers rotate
+//   spending back toward experiences.
+//   Format      0.00
+//   Depends on  Sector Sales
+
+Goods to Services Ratio =
+    DIVIDE ( CALCULATE ( [Sector Sales], ALL ( DimCategory ), DimCategory[CategoryCode] = "44000" ),
+             CALCULATE ( [Sector Sales], ALL ( DimCategory ), DimCategory[CategoryCode] = "722" ) )
+
+// ---- Rate Sensitivity Beta -----------------------------------------
+//   Evaluated PER CATEGORY on a visual. Strongly negative identifies
+//   the rate-sensitive kinds of business (autos, furniture, building
+//   materials); near zero identifies staples. If those categories do
+//   not land negative, check the deflation before publishing.
+//   Format      0.00
+//   Depends on  Fed Funds Rate, Real Sector Sales YoY %
+
+Rate Sensitivity Beta =
+    VAR Points = ADDCOLUMNS ( CALCULATETABLE ( VALUES ( DimDate[DateKey] ), ALLSELECTED ( DimDate ) ),
+        "@x", [Fed Funds Rate], "@y", [Real Sector Sales YoY %] )
+    VAR Known = FILTER ( Points, NOT ISBLANK ( [@x] ) && NOT ISBLANK ( [@y] ) )
+    VAR MeanX = AVERAGEX ( Known, [@x] )
+    VAR MeanY = AVERAGEX ( Known, [@y] )
+    RETURN DIVIDE ( SUMX ( Known, ( [@x] - MeanX ) * ( [@y] - MeanY ) ),
+                    SUMX ( Known, ( [@x] - MeanX ) ^ 2 ) )

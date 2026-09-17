@@ -40,7 +40,7 @@ CREATE TABLE stg.WarehouseRetailSales
 GO
 
 BULK INSERT stg.WarehouseRetailSales
-FROM 'C:\\Data\\RetailEconomics\\warehouse_and_retail_sales.csv'
+FROM 'C:\Data\RetailEconomics\warehouse_and_retail_sales.csv'
 WITH (
     FORMAT          = 'CSV',
     FIRSTROW        = 2,

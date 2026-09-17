@@ -1,0 +1,75 @@
+// ========================================================================
+// 04_cross_tier.dax
+// U.S. Retail Sector Health - display folder "04 Cross-Tier"
+//
+// 6 measures. Build them in the order below; later ones
+// reference earlier ones and a missing dependency returns BLANK
+// rather than an error.
+//
+// HOME TABLE     _Measures
+// DISPLAY FOLDER 04 Cross-Tier   (type it exactly, leading number included)
+// SOURCE         document 02 section 8. Generated from the same list
+//                that produces document 20's Measures tab.
+//
+// Every measure needs its format string and description set as well
+// as its expression - both are given with each one below.
+// ========================================================================
+
+
+// ---- National Liquor Stores Sales ----------------------------------
+//   Census 4453, nominal dollars. The national comparator BEFORE
+//   deflation.
+//   Format      #,##0
+//   Depends on  Sector Sales
+
+National Liquor Stores Sales =
+    CALCULATE ( [Sector Sales], ALL ( DimCategory ), DimCategory[CategoryCode] = "4453" )
+
+// ---- National Liquor Stores Real Sales -----------------------------
+//   Deflated. This is the volume-comparable counterpart to a case
+//   count.
+//   Format      #,##0
+//   Depends on  Macro Value, National Liquor Stores Sales
+
+National Liquor Stores Real Sales =
+    VAR Cpi = CALCULATE ( [Macro Value], ALL ( DimIndicator ), DimIndicator[SeriesId] = "CPIAUCSL" )
+    RETURN DIVIDE ( [National Liquor Stores Sales], Cpi ) * 100
+
+// ---- National Liquor Stores Nominal YoY % --------------------------
+//   Dollar growth. Reported only alongside the real series so the
+//   price share is visible.
+//   Format      0.0%
+//   Depends on  National Liquor Stores Sales
+
+National Liquor Stores Nominal YoY % =
+    VAR Prior = CALCULATE ( [National Liquor Stores Sales], DATEADD ( DimDate[Date], -12, MONTH ) )
+    RETURN DIVIDE ( [National Liquor Stores Sales] - Prior, Prior )
+
+// ---- National Liquor Stores Real YoY % -----------------------------
+//   Volume growth of the national category. Spec 3.5 pairs this with
+//   Total Cases YoY % and nothing else.
+//   Format      0.0%
+//   Depends on  National Liquor Stores Real Sales
+
+National Liquor Stores Real YoY % =
+    VAR Prior = CALCULATE ( [National Liquor Stores Real Sales], DATEADD ( DimDate[Date], -12, MONTH ) )
+    RETURN DIVIDE ( [National Liquor Stores Real Sales] - Prior, Prior )
+
+// ---- Volume Gap vs National (pp) -----------------------------------
+//   Local volume growth less national REAL growth. Positive: the local
+//   market outgrew the category in real terms. Both sides are
+//   volume-comparable; neither carries price.
+//   Format      0.0
+//   Depends on  National Liquor Stores Real YoY %, Total Cases YoY %
+
+Volume Gap vs National (pp) =
+    ( [Total Cases YoY %] - [National Liquor Stores Real YoY %] ) * 100
+
+// ---- Implied Price Contribution (pp) -------------------------------
+//   The nominal-minus-real wedge, reported beside the volume gap so a
+//   reader can see how much of the dollar headline was price.
+//   Format      0.0
+//   Depends on  National Liquor Stores Nominal YoY %, National Liquor Stores Real YoY %
+
+Implied Price Contribution (pp) =
+    ( [National Liquor Stores Nominal YoY %] - [National Liquor Stores Real YoY %] ) * 100
