@@ -10,6 +10,9 @@ from national macro conditions to item-level physical movement.
  
 ## Data model
 ![Star schema](assets/model_view.png)
+
+## Pipeline diagram
+![Pipeline diagram](assets/pipeline_view.png)
  
 ## Highlights
 - Three ingestion patterns in one model: keyed REST API (Census MARTS),
