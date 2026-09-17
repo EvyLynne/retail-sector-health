@@ -1,0 +1,28 @@
+# -- source data: linked, never redistributed -------------
+*.csv
+*.tsv
+warehouse_and_retail_sales*
+ 
+# -- credentials: the Census API key must never be tracked
+*.env
+*.key
+secrets.json
+**/apikey*.txt
+ 
+# -- Power BI local & cache files (PBIP) ------------------
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+*.abf
+*.pbix.tmp
+ 
+# -- SQL Server artifacts ---------------------------------
+*.bak
+*.mdf
+*.ldf
+*.trn
+ 
+# -- Office / OS clutter ----------------------------------
+~$*
+*.tmp
+Thumbs.db
+.DS_Store
