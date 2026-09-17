@@ -1,0 +1,16 @@
+# Normalise line endings so a file edited on Windows does not show up as
+# wholly rewritten. Without this, every .md and .sql touched on this machine
+# arrives as CRLF and git reports 100% of its lines changed.
+* text=auto eol=lf
+
+# Windows-native tooling expects CRLF in these.
+*.ps1 text eol=crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Binary: never diff, never normalise.
+*.docx  binary
+*.xlsx  binary
+*.pbix  binary
+*.png   binary
+*.abf   binary

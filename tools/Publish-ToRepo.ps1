@@ -18,7 +18,7 @@
     committed.
 
 .PARAMETER RepoRoot
-    Full path to the cloned repository, e.g. X:\Multisource. Must contain a
+    Full path to the cloned repository, e.g. X:\retail-sector-health. Must contain a
     .git folder; the script refuses to write anywhere that is not a clone.
 
 .PARAMETER StagingPath
@@ -38,16 +38,16 @@
     Commit message, used only with -Commit.
 
 .EXAMPLE
-    .\Publish-ToRepo.ps1 -RepoRoot 'X:\Multisource' -WhatIf
+    .\Publish-ToRepo.ps1 -RepoRoot 'X:\retail-sector-health' -WhatIf
     Dry run. Shows every file that would be copied and where, changing nothing.
 
 .EXAMPLE
-    .\Publish-ToRepo.ps1 -RepoRoot 'X:\Multisource'
+    .\Publish-ToRepo.ps1 -RepoRoot 'X:\retail-sector-health'
     Copies, stages with git add, prints git status, and stops. Review the
     staged set, then commit and push yourself.
 
 .EXAMPLE
-    .\Publish-ToRepo.ps1 -RepoRoot 'X:\Multisource' -Commit -Message 'Add document set v1.0'
+    .\Publish-ToRepo.ps1 -RepoRoot 'X:\retail-sector-health' -Commit -Message 'Add document set v1.0'
     Copies, stages and commits. Does not push.
 
 .NOTES
