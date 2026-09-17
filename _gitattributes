@@ -1,4 +1,4 @@
-# Remove this line to use this file and change the name to .gitattributes
+# To use this file: Remove this line and change the name to .gitattributes
 # Normalise line endings so a file edited on Windows does not show up as
 # wholly rewritten. Without this, every .md and .sql touched on this machine
 # arrives as CRLF and git reports 100% of its lines changed.
