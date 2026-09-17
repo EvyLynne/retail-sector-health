@@ -23,5 +23,4 @@ Numbering is gapped on purpose. So later documents slot in without renumbering a
 - Never renumber a delivered document. Other documents cite it by number.
 - The three .html mockups are self-contained and can be published with
   GitHub Pages with no build step.
-- Word and Excel files are uploaded through the GitHub website rather
-  than GitHub Desktop. See document 00 section 8.
+ 
