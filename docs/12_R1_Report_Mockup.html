@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>R1 Retail Sector Health &mdash; Power BI Report Mockup</title>
+<style>
+  :root{
+    --navy:#1F3864; --navy2:#2E74B5; --teal:#1B9E8F; --amber:#C8860A; --red:#C0392B; --green:#1E7B34;
+    --canvas:#FAFAFA; --card:#FFFFFF; --ink:#252423; --sub:#605E5C; --line:#E1DFDD;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI",Calibri,Arial,sans-serif;background:#ECEAE7;color:var(--ink);padding:24px}
+  .frame{max-width:1320px;margin:0 auto}
+  .mocknote{font-size:12px;color:var(--sub);text-align:center;margin-bottom:10px;letter-spacing:.4px}
+  .tabs{display:flex;gap:2px;margin-bottom:0;flex-wrap:wrap}
+  .tab{padding:10px 20px;background:#D8D5D1;border:none;border-radius:6px 6px 0 0;font-size:13px;font-weight:600;color:var(--sub);cursor:pointer;font-family:inherit}
+  .tab.active{background:var(--navy);color:#fff}
+  .page{display:none;background:var(--canvas);border:1px solid var(--line);border-radius:0 8px 8px 8px;padding:14px;aspect-ratio:16/9;min-height:640px;flex-direction:column;gap:10px}
+  .page.active{display:flex}
+  .hdr{display:flex;align-items:center;justify-content:space-between;background:var(--navy);border-radius:6px;padding:10px 16px}
+  .hdr h1{font-size:17px;color:#fff;font-weight:600}
+  .hdr .sub{font-size:11px;color:#B9C7DE;font-weight:400;margin-top:2px}
+  .slicers{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-size:11px;padding:4px 11px;border-radius:12px;background:#33507F;color:#CBD8EC;cursor:default}
+  .chip.on{background:#fff;color:var(--navy);font-weight:600}
+  .dateslicer{font-size:11px;color:#CBD8EC;background:#33507F;padding:5px 12px;border-radius:4px}
+  .navbtns{display:flex;gap:4px}
+  .navbtn{font-size:10px;padding:4px 9px;border-radius:3px;background:#33507F;color:#CBD8EC}
+  .navbtn.on{background:var(--amber);color:#fff;font-weight:600}
+  .kpirow{display:grid;gap:10px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:9px 13px 7px;position:relative}
+  .kpi .lbl{font-size:10.5px;color:var(--sub);text-transform:uppercase;letter-spacing:.5px}
+  .kpi .val{font-size:24px;font-weight:600;margin:2px 0}
+  .kpi .ref{font-size:11px}
+  .up{color:var(--green)} .down{color:var(--red)} .warn{color:var(--amber)} .tealtx{color:var(--teal)}
+  .grid{display:grid;gap:10px;flex:1;min-height:0}
+  .viz{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:8px 12px;display:flex;flex-direction:column;min-height:0}
+  .viz h3{font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:2px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .viz .cap{font-size:10.5px;color:var(--sub);margin-bottom:4px}
+  .viz svg{flex:1;width:100%;min-height:0}
+  .legend{display:flex;gap:14px;font-size:10.5px;color:var(--sub);margin-top:2px;flex-wrap:wrap}
+  .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+  .spec{font-size:8.5px;font-weight:600;color:var(--sub);background:#EFEDEB;border:1px solid var(--line);border-radius:8px;padding:1px 7px;letter-spacing:.3px;white-space:nowrap;text-transform:uppercase}
+  .spec.warnspec{background:#FBF0DC;border-color:#E3C489;color:#8A5D00}
+  table{width:100%;border-collapse:collapse;font-size:10.5px}
+  th{text-align:left;color:var(--sub);font-weight:600;border-bottom:2px solid var(--line);padding:3px 5px}
+  td{padding:3px 5px;border-bottom:1px solid #F0EEEC}
+  td.num,th.num{text-align:right}
+  .bar-in{height:9px;background:var(--navy2);border-radius:2px;display:inline-block;vertical-align:middle}
+  .pill{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;color:#fff}
+  .note{font-size:10.5px;color:var(--sub);line-height:1.45}
+  .footer{font-size:10px;color:var(--sub);display:flex;justify-content:space-between;padding:0 4px;gap:12px}
+  .unitflag{font-size:10px;font-weight:600;color:#8A5D00;background:#FBF0DC;border:1px solid #E3C489;border-radius:3px;padding:2px 8px}
+  .quad{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:1;min-height:0}
+  .quadcell{border:1px solid var(--line);border-radius:4px;padding:4px 6px;display:flex;flex-direction:column;min-height:0}
+  .quadcell .qt{font-size:10px;font-weight:600;color:var(--sub);text-align:center}
+  @media (max-width:900px){ .page{aspect-ratio:auto} .kpirow,.grid{grid-template-columns:1fr !important} }
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="mocknote">DOCUMENT 12 &middot; STATIC MOCKUP &mdash; Report 1: Retail Sector Health &middot; companion to document 01 &sect;5.1&ndash;5.3 &middot; specs 1.1&ndash;3.12 &middot; illustrative data</div>
+  <div class="tabs">
+    <button class="tab active" data-p="p1">1 &middot; Macro Environment</button>
+    <button class="tab" data-p="p2">2 &middot; Sector Performance</button>
+    <button class="tab" data-p="p3">3 &middot; Item Volume &amp; Channel</button>
+  </div>
+  <section class="page active" id="p1">
+    <div class="hdr">
+      <div><h1>Macro Environment</h1><div class="sub">U.S. Retail Sector Health &middot; Report 1 of 3 &middot; all figures in USD</div></div>
+      <div class="slicers">
+        <div class="navbtns"><span class="navbtn on">Macro</span><span class="navbtn">Sector</span><span class="navbtn">Item</span></div>
+        <div class="chips"><span class="chip on">All</span><span class="chip">Discretionary</span><span class="chip">Staples</span><span class="chip">Services</span></div>
+        <div class="dateslicer">Month&nbsp; Jan 2017 &ndash; Jul 2026</div>
+      </div>
+    </div>
+
+    <div class="kpirow" style="grid-template-columns:repeat(4,1fr)">
+      <div class="kpi"><div class="lbl">CPI YoY <span class="spec">1.1</span></div><div class="val">2.9%</div><div class="ref down">&#9660; &minus;0.3 pts vs PM</div><svg height="20" id="s11"></svg></div>
+      <div class="kpi"><div class="lbl">Fed Funds Rate <span class="spec">1.2</span></div><div class="val">4.33%</div><div class="ref down">&#9660; &minus;1.1 pts vs PY</div><svg height="20" id="s12"></svg></div>
+      <div class="kpi"><div class="lbl">Consumer Sentiment <span class="spec">1.3</span></div><div class="val warn">64.7</div><div class="ref up">&#9650; +2.1 vs PM</div><svg height="20" id="s13"></svg></div>
+      <div class="kpi"><div class="lbl">Personal Saving Rate <span class="spec">1.4</span></div><div class="val">4.6%</div><div class="ref down">&#9660; &minus;0.2 pts vs PM</div><svg height="20" id="s14"></svg></div>
+    </div>
+    <div class="grid" style="grid-template-columns:1.45fr 1fr;grid-template-rows:1.25fr 1fr">
+      <div class="viz" style="grid-row:span 2">
+        <h3>Macro Indicators, Indexed to 100 <span class="spec">spec 1.5</span></h3>
+        <div class="cap">Line chart &middot; X: DimDate[Date] continuous &middot; Y: Macro Indexed to 100 &middot; Legend: IndicatorName</div>
+        <svg id="v15" viewBox="0 0 560 320" preserveAspectRatio="none"></svg>
+        <div class="legend"><span><span class="sw" style="background:var(--navy)"></span>CPI</span><span><span class="sw" style="background:var(--teal)"></span>Retail Sales</span><span><span class="sw" style="background:var(--amber)"></span>Fed Funds</span><span><span class="sw" style="background:#B3B0AD"></span>Sentiment</span></div>
+      </div>
+      <div class="viz">
+        <h3>Retail Sales vs Inflation <span class="spec">spec 1.6</span></h3>
+        <div class="cap">Line and clustered column &middot; Column: Sector Sales 44X72 &middot; Line: CPI YoY % on secondary axis</div>
+        <svg id="v16" viewBox="0 0 400 170" preserveAspectRatio="none"></svg>
+        <div class="legend"><span><span class="sw" style="background:var(--navy)"></span>Sector Sales ($M)</span><span><span class="sw" style="background:var(--red)"></span>CPI YoY %</span></div>
+      </div>
+      <div class="viz">
+        <h3>Real vs Nominal Retail Sales <span class="spec">spec 1.7</span></h3>
+        <div class="cap">Area chart &middot; the gap between the two series is the inflation wedge</div>
+        <svg id="v17" viewBox="0 0 400 150" preserveAspectRatio="none"></svg>
+        <div class="legend"><span><span class="sw" style="background:var(--navy)"></span>Nominal</span><span><span class="sw" style="background:var(--teal)"></span>Real (1982-84 $)</span></div>
+      </div>
+    </div>
+    <div class="footer"><span>1.5 cross-filters 1.6 and 1.7 &middot; date slicer synced across R1 &middot; spec 1.8 narrative text box sits under 1.7 at full build</span><span>&#8635; Reset filters (bookmark)</span></div>
+  </section>
+  <section class="page" id="p2">
+    <div class="hdr">
+      <div><h1>Sector Performance</h1><div class="sub">Census MARTS &middot; NAICS kind of business &middot; nominal USD unless labelled Real</div></div>
+      <div class="slicers">
+        <div class="navbtns"><span class="navbtn">Macro</span><span class="navbtn on">Sector</span><span class="navbtn">Item</span></div>
+        <div class="chips"><span class="chip on">All</span><span class="chip">Discretionary</span><span class="chip">Staples</span><span class="chip">Services</span></div>
+        <div class="dateslicer">Month&nbsp; Jan 2017 &ndash; Jul 2026</div>
+      </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:1fr 1fr;grid-template-rows:1.15fr 1.15fr 0.5fr">
+      <div class="viz">
+        <h3>Sector Growth by Category <span class="spec">spec 2.2</span></h3>
+        <div class="cap">Line chart, small multiples on CategoryName &mdash; supported on line charts</div>
+        <svg id="v22" viewBox="0 0 520 200" preserveAspectRatio="none"></svg>
+      </div>
+      <div class="viz">
+        <h3>Share of Total Retail <span class="spec">spec 2.3</span></h3>
+        <div class="cap">Stacked area &middot; aggregates excluded via IsAggregate &middot; axis to 100%</div>
+        <svg id="v23" viewBox="0 0 520 200" preserveAspectRatio="none"></svg>
+        <div class="legend"><span><span class="sw" style="background:#1F3864"></span>Gen. merch.</span><span><span class="sw" style="background:#2E74B5"></span>Nonstore</span><span><span class="sw" style="background:#1B9E8F"></span>Food &amp; bev.</span><span><span class="sw" style="background:#C8860A"></span>Food svc.</span><span><span class="sw" style="background:#B3B0AD"></span>Other</span></div>
+      </div>
+      <div class="viz">
+        <h3>Category Detail <span class="spec">spec 2.4</span></h3>
+        <div class="cap">Matrix &middot; diverging colour on the final column, centred at zero</div>
+        <table>
+          <tr><th>Category</th><th class="num">Sales $M</th><th class="num">Nom YoY</th><th class="num">Real YoY</th><th class="num">Nom&minus;Real</th></tr>
+          <tr><td>Nonstore retailers</td><td class="num">134,820</td><td class="num up">&#9650; 8.1%</td><td class="num up">&#9650; 5.1%</td><td class="num" style="background:#FCE9E5">+3.0</td></tr>
+          <tr><td>General merchandise</td><td class="num">78,440</td><td class="num up">&#9650; 4.2%</td><td class="num up">&#9650; 1.3%</td><td class="num" style="background:#FDF1EC">+2.9</td></tr>
+          <tr><td>Food &amp; beverage</td><td class="num">84,910</td><td class="num up">&#9650; 3.1%</td><td class="num up">&#9650; 0.2%</td><td class="num" style="background:#FDF1EC">+2.9</td></tr>
+          <tr><td>Gasoline stations</td><td class="num">52,300</td><td class="num down">&#9660; 4.9%</td><td class="num down">&#9660; 7.6%</td><td class="num" style="background:#FCE9E5">+2.7</td></tr>
+          <tr><td>Department stores</td><td class="num">10,980</td><td class="num down">&#9660; 2.4%</td><td class="num down">&#9660; 5.2%</td><td class="num" style="background:#FDF1EC">+2.8</td></tr>
+        </table>
+      </div>
+      <div class="viz">
+        <h3>Price vs Volume Growth <span class="spec">spec 2.5</span></h3>
+        <div class="cap">Scatter &middot; X: Sector Sales YoY % &middot; Y: Nominal less Real (pp) &middot; size: Sales &middot; quadrant lines at 0 / 0</div>
+        <svg id="v25" viewBox="0 0 520 210" preserveAspectRatio="none"></svg>
+      </div>
+      <div class="viz" style="grid-column:1 / span 2;display:flex;flex-direction:row;align-items:center;gap:18px">
+        <div style="flex:0 0 300px">
+          <h3 style="margin-bottom:4px">Inflation Wedge <span class="spec">spec 2.6</span></h3>
+          <div class="cap" style="margin:0">Nominal less Real YoY (pp) for 44X72</div>
+          <div style="font-size:26px;font-weight:600;color:var(--red);margin-top:4px">+2.8 pts</div>
+        </div>
+        <p class="note" style="flex:1">Reads on the page as: <b>&ldquo;2.8 points of the 5.4% headline growth was price, not volume.&rdquo;</b> This card exists so a reader who takes only one number from Page 2 takes the right one. Real Sector Sales deflates nominal by CPIAUCSL; the deflator is an all-items index, which is a convention rather than a category-specific volume measure &mdash; document 01 &sect;7.2 states the caveat.</p>
+      </div>
+    </div>
+    <div class="footer"><span>Slicer 2.1 (CategoryGroup) filters the page &middot; 2.4 cross-filters 2.5 &middot; no drillthrough &mdash; category has no deeper grain in the source</span><span>&#8635; Reset filters</span></div>
+  </section>
+  <section class="page" id="p3">
+    <div class="hdr">
+      <div><h1>Item-Level Volume &amp; Channel Shift</h1><div class="sub">Montgomery County MD &middot; Report 1 page 3 &middot; <b>all measures in CASES</b></div></div>
+      <div class="slicers">
+        <div class="navbtns"><span class="navbtn">Macro</span><span class="navbtn">Sector</span><span class="navbtn on">Item</span></div>
+        <div class="chips"><span class="chip on">All</span><span class="chip">Wine</span><span class="chip">Liquor</span><span class="chip">Beer</span><span class="chip">Kegs</span></div>
+        <div class="dateslicer">Month&nbsp; Jan 2017 &ndash; Jul 2026</div>
+      </div>
+    </div>
+
+    <div class="kpirow" style="grid-template-columns:repeat(4,1fr)">
+      <div class="kpi"><div class="lbl">Total Cases <span class="spec">3.1</span></div><div class="val">412.6K</div><div class="ref up">&#9650; +2.4% YoY</div><svg height="20" id="s31"></svg></div>
+      <div class="kpi"><div class="lbl">On-Premise Share <span class="spec">3.2</span></div><div class="val">18.2%</div><div class="ref down">&#9660; &minus;6.9 pts vs 2019</div></div>
+      <div class="kpi"><div class="lbl">Volume Gap vs National <span class="spec">3.3</span></div><div class="val up">+1.1 pp</div><div class="ref" style="color:var(--sub)">vs Real 4453 YoY</div></div>
+      <div class="kpi"><div class="lbl">Active Items <span class="spec">3.4</span></div><div class="val">3,184</div><div class="ref" style="color:var(--sub)">of 9,902 ever seen</div></div>
+    </div>
+    <div class="grid" style="grid-template-columns:1.25fr 1fr;grid-template-rows:1fr 0.92fr 1.05fr">
+      <div class="viz">
+        <h3>Local Volume vs National Real <span class="spec">spec 3.5</span> <span class="unitflag">cases vs deflated $</span></h3>
+        <div class="cap">Total Cases YoY % against National Liquor Stores <b>Real</b> YoY % &mdash; never the nominal series</div>
+        <svg id="v35" viewBox="0 0 470 160" preserveAspectRatio="none"></svg>
+        <div class="legend"><span><span class="sw" style="background:var(--navy)"></span>Local cases YoY</span><span><span class="sw" style="background:var(--teal)"></span>National 4453 real YoY</span></div>
+      </div>
+      <div class="viz">
+        <h3>Volume Gap by Class <span class="spec">spec 3.6</span></h3>
+        <div class="cap">Clustered bar &middot; diverging by sign &middot; constant line at 0</div>
+        <svg id="v36" viewBox="0 0 360 160" preserveAspectRatio="none"></svg>
+      </div>
+      <div class="viz">
+        <h3>Supplier &amp; Item Detail <span class="spec">spec 3.7</span></h3>
+        <div class="cap">Matrix &middot; SupplierName &#9656; ItemDescription &middot; Top N 25 on Total Cases &middot; all columns in cases</div>
+        <table>
+          <tr><th>Supplier</th><th class="num">Retail</th><th class="num">Whse</th><th class="num">Retail %</th><th class="num">Trf/Sales</th></tr>
+          <tr><td>&#9656; REPUBLIC NATIONAL</td><td class="num">41,208</td><td class="num">9,140</td><td class="num"><span class="bar-in" style="width:44px"></span> 81.8%</td><td class="num">1.02</td></tr>
+          <tr><td>&#9656; E &amp; J GALLO WINERY</td><td class="num">28,644</td><td class="num">3,210</td><td class="num"><span class="bar-in" style="width:48px"></span> 89.9%</td><td class="num">0.98</td></tr>
+          <tr><td>&#9656; CROWN IMPORTS</td><td class="num">19,870</td><td class="num">12,405</td><td class="num"><span class="bar-in" style="width:33px"></span> 61.6%</td><td class="num" style="color:var(--red)">1.41</td></tr>
+          <tr><td>&#9656; DIAGEO NORTH AMERICA</td><td class="num">17,092</td><td class="num">2,880</td><td class="num"><span class="bar-in" style="width:46px"></span> 85.6%</td><td class="num">1.00</td></tr>
+          <tr><td>&#9656; ANHEUSER BUSCH</td><td class="num">14,330</td><td class="num">15,980</td><td class="num"><span class="bar-in" style="width:25px"></span> 47.3%</td><td class="num" style="color:var(--red)">1.58</td></tr>
+        </table>
+      </div>
+      <div class="viz">
+        <h3>Return Rows <span class="spec">spec 3.8</span></h3>
+        <div class="cap">Data-quality control, not a filter</div>
+        <div style="font-size:30px;font-weight:600;color:var(--amber);margin:2px 0 4px">7,412</div>
+        <p class="note">Rows where RETAIL SALES is negative. These are <b>returns and inter-location transfers, retained by design</b> &mdash; not errors, and never filtered out silently. The card carries a tooltip saying so, because a reviewer who spots negative values in a fact table and finds no explanation assumes the load is broken.</p>
+      </div>
+      <div class="viz" style="grid-column:1 / span 2">
+        <h3>Channel Panel &mdash; On-Premise vs Off-Premise <span class="spec">specs 3.9 &ndash; 3.12</span></h3>
+        <div class="cap">Four visuals, all on a <b>continuous</b> DimDate[Date] axis so the Mar-2020 X-axis constant line is available in the Analytics pane</div>
+        <div class="quad">
+          <div class="quadcell"><div class="qt">3.9 &middot; Channel split (stacked area, cases)</div><svg id="v39" viewBox="0 0 240 120" preserveAspectRatio="none"></svg></div>
+          <div class="quadcell"><div class="qt">3.10 &middot; On-premise share vs 2019 (pp)</div><svg id="v310" viewBox="0 0 240 120" preserveAspectRatio="none"></svg></div>
+          <div class="quadcell"><div class="qt">3.11 &middot; Keg share % (purest on-premise read)</div><svg id="v311" viewBox="0 0 240 120" preserveAspectRatio="none"></svg></div>
+          <div class="quadcell"><div class="qt">3.12 &middot; National check: 722 vs 4453 YoY</div><svg id="v312" viewBox="0 0 240 120" preserveAspectRatio="none"></svg></div>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><span>3.6 cross-filters 3.7 matrix &middot; channel panel does NOT cross-filter the upper grid &middot; drillthrough from BeverageClass / ItemType / SupplierName</span><span>&#8635; Reset filters</span></div>
+  </section>
+</div>
+<script>
+const NS="http://www.w3.org/2000/svg";
+function el(n,a){const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);return e;}
+function txt(s,x,y,o){const t=el("text",Object.assign({x,y,"font-size":"9",fill:"#605E5C"},o||{}));t.textContent=s;return t;}
+function gridlines(s,W,H,n){for(let i=1;i<n;i++)s.appendChild(el("line",{x1:0,y1:H/n*i,x2:W,y2:H/n*i,stroke:"#EFEDEB"}));}
+function poly(s,data,W,H,min,max,color,opt){
+  opt=opt||{};const pad=opt.pad||16;
+  const X=i=>i/(data.length-1)*W, Y=v=>H-pad-((v-min)/(max-min))*(H-pad-8);
+  const d="M"+data.map((v,i)=>X(i).toFixed(1)+","+Y(v).toFixed(1)).join(" L ");
+  if(opt.fill){s.appendChild(el("path",{d:d+` L ${W},${H-pad} L 0,${H-pad} Z`,fill:opt.fill,stroke:"none",opacity:opt.fillOpacity||.5}));}
+  s.appendChild(el("path",{d,fill:"none",stroke:color,"stroke-width":opt.w||2.2,"stroke-dasharray":opt.dash||"none","stroke-linejoin":"round"}));
+  return {X,Y};
+}
+function refline(s,W,H,min,max,v,color,label,pad){
+  pad=pad||16;const y=H-pad-((v-min)/(max-min))*(H-pad-8);
+  s.appendChild(el("line",{x1:0,y1:y,x2:W,y2:y,stroke:color,"stroke-dasharray":"4 3"}));
+  if(label)s.appendChild(txt(label,3,y-3,{"font-size":"8.5",fill:color}));
+}
+function vline(s,H,x,color,label,pad){
+  pad=pad||16;
+  s.appendChild(el("line",{x1:x,y1:6,x2:x,y2:H-pad,stroke:color,"stroke-dasharray":"3 3"}));
+  if(label)s.appendChild(txt(label,x+4,15,{"font-size":"8.5",fill:color}));
+}
+function xlabels(s,labels,W,H){labels.forEach((t,i)=>s.appendChild(txt(t,i*(W/(labels.length-0.6))+3,H-3,{"font-size":"9.5"})));}
+function bars(s,rows,W,H,color,opt){
+  opt=opt||{};const max=opt.max||Math.max(...rows.map(r=>Math.abs(r[1])));
+  const lw=opt.labelW||86, bh=opt.bh||11, gap=opt.gap||(H-8)/rows.length;
+  const span=W-lw-40, half=span/2;
+  rows.forEach((r,i)=>{const y=6+i*gap, w=Math.abs(r[1])/max*(opt.diverge?half:span);
+    const neg=r[1]<0, x0=opt.diverge?lw+half:lw;
+    const x=neg?x0-w:x0;
+    s.appendChild(el("rect",{x,y,width:Math.max(w,1),height:bh,rx:2,fill:r[2]||color}));
+    s.appendChild(txt(r[0],lw-5,y+bh-1.5,{"text-anchor":"end",fill:"#252423","font-size":"9.5"}));
+    const lx = opt.diverge&&neg ? x0+5 : (neg?x-4:x+w+4);
+    const la = opt.diverge&&neg ? "start" : (neg?"end":"start");
+    s.appendChild(txt(opt.fmt?opt.fmt(r[1]):r[1],lx,y+bh-1.5,{"font-size":"8.5","text-anchor":la}));});
+  if(opt.diverge){const x0=lw+(W-lw-34)/2;s.appendChild(el("line",{x1:x0,y1:2,x2:x0,y2:H-2,stroke:"#B3B0AD"}));}
+}
+function tabs(){document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');document.getElementById(t.dataset.p).classList.add('active');}));}
+
+tabs();
+// ---- illustrative series, 2017-01 .. 2026-07 sampled ----
+const N=39;
+const cpi=[100,101,102,103,104,105,106,107,108,109,110,112,115,119,124,128,131,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154];
+const rsales=[100,102,104,105,107,109,110,96,112,124,130,134,138,141,143,144,145,147,148,150,152,153,155,156,158,159,161,162,164,165,167,168,170,171,173,174,176,177,179];
+const ffr=[100,104,110,118,126,130,132,104,100,100,100,100,106,140,190,240,280,300,305,300,292,285,278,272,266,262,258,255,252,250,248,246,244,242,240,238,236,234,232];
+const sent=[100,99,98,97,96,95,94,74,78,82,84,80,72,62,55,52,58,64,68,70,72,71,70,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84];
+const cpiyoy=[2.1,2.2,1.9,1.8,2.0,2.3,2.4,1.4,1.2,1.7,2.6,4.2,5.4,6.8,7.9,8.6,8.2,7.1,6.0,5.0,4.2,3.7,3.2,3.4,3.1,2.9,2.7,2.5,2.6,2.8,3.0,2.9,2.8,2.9,3.0,2.9,2.8,2.9,2.9];
+const YR=["2017","2018","2019","2020","2021","2022","2023","2024","2025","26"];
+
+// KPI sparklines
+function spark(id,data,color){const s=document.getElementById(id);if(!s)return;
+  const mn=Math.min(...data),mx=Math.max(...data);poly(s,data,280,20,mn,mx*1.02,color,{w:1.6,pad:2});}
+spark('s11',cpiyoy,"#2E74B5"); spark('s12',ffr,"#2E74B5"); spark('s13',sent,"#2E74B5"); spark('s14',[34,32,30,28,26,24,22,90,60,42,30,24,20,18,16,15,14,14,13,13,14,14,15,15,16,16,17,17,18,18,18,19,19,19,20,20,20,20,19].map(v=>v/4),"#2E74B5");
+
+// 1.5 indexed macro
+(function(){const s=document.getElementById('v15'),W=560,H=320;gridlines(s,W,H,5);
+  poly(s,sent,W,H,40,320,"#B3B0AD",{w:1.8});
+  poly(s,ffr,W,H,40,320,"#C8860A",{w:1.8});
+  poly(s,rsales,W,H,40,320,"#1B9E8F",{w:2.2});
+  poly(s,cpi,W,H,40,320,"#1F3864",{w:2.6});
+  refline(s,W,H,40,320,100,"#B3B0AD","base = 100");
+  xlabels(s,YR,W,H);})();
+
+// 1.6 combo
+(function(){const s=document.getElementById('v16'),W=400,H=170;gridlines(s,W,H,4);
+  const bw=W/N*0.7;
+  rsales.forEach((v,i)=>{const h=(v-90)/100*(H-30);
+    s.appendChild(el("rect",{x:i*(W/N)+1,y:H-16-h,width:bw,height:Math.max(h,1),fill:"#1F3864",opacity:.85}));});
+  poly(s,cpiyoy,W,H,0,10,"#C0392B",{w:2.2});
+  xlabels(s,YR,W,H);})();
+
+// 1.7 real vs nominal
+(function(){const s=document.getElementById('v17'),W=400,H=150;gridlines(s,W,H,4);
+  const real=rsales.map((v,i)=>v/cpi[i]*100);
+  poly(s,rsales,W,H,85,190,"#1F3864",{fill:"#1F3864",fillOpacity:.18});
+  poly(s,real,W,H,85,190,"#1B9E8F",{fill:"#1B9E8F",fillOpacity:.28});
+  s.appendChild(txt("inflation wedge",W*0.62,34,{"font-size":"9",fill:"#C0392B","font-style":"italic"}));
+  xlabels(s,YR,W,H);})();
+
+// 2.2 small multiples
+(function(){const s=document.getElementById('v22');if(!s)return;const W=520,H=200;
+  const names=["Nonstore","Gen. merch.","Food & bev.","Gasoline","Dept. stores","Clothing"];
+  const seeds=[[6,7,9,22,14,9,8,8],[3,4,5,11,7,4,4,4],[2,3,4,10,6,3,3,3],[5,4,6,-18,26,14,-5,-5],[-2,-3,-2,-22,12,2,-3,-2],[3,2,4,-20,28,8,1,2]];
+  seeds.forEach((d,k)=>{const cx=(k%3)*(W/3), cy=Math.floor(k/3)*(H/2);
+    const g=el("g",{transform:`translate(${cx+4},${cy+4})`});s.appendChild(g);
+    const w=W/3-10,h=H/2-14;
+    g.appendChild(el("rect",{x:0,y:0,width:w,height:h,fill:"#FCFCFB",stroke:"#EFEDEB"}));
+    const mn=-25,mx=30,Y=v=>h-6-((v-mn)/(mx-mn))*(h-12);
+    g.appendChild(el("line",{x1:0,y1:Y(0),x2:w,y2:Y(0),stroke:"#DDD"}));
+    const dd="M"+d.map((v,i)=>(i/(d.length-1)*w).toFixed(1)+","+Y(v).toFixed(1)).join(" L ");
+    g.appendChild(el("path",{d:dd,fill:"none",stroke:"#1F3864","stroke-width":1.8}));
+    g.appendChild(txt(names[k],4,10,{"font-size":"8.5","font-weight":"600",fill:"#252423"}));});})();
+
+// 2.3 stacked area share
+(function(){const s=document.getElementById('v23');if(!s)return;const W=520,H=200;
+  const series=[[12,12,12,13,14,15,16,16],[9,10,11,16,15,15,16,17],[13,13,13,15,14,14,14,14],[12,12,13,9,11,12,12,12]];
+  const cols=["#1F3864","#2E74B5","#1B9E8F","#C8860A"];
+  const n=series[0].length;let cum=new Array(n).fill(0);
+  series.forEach((d,k)=>{const top=d.map((v,i)=>cum[i]+v);
+    const up=top.map((v,i)=>(i/(n-1)*W).toFixed(1)+","+(H-10-v/100*(H-20)).toFixed(1));
+    const lo=cum.map((v,i)=>(i/(n-1)*W).toFixed(1)+","+(H-10-v/100*(H-20)).toFixed(1)).reverse();
+    s.appendChild(el("path",{d:"M"+up.join(" L ")+" L "+lo.join(" L ")+" Z",fill:cols[k],opacity:.92}));
+    cum=top;});
+  const up=cum.map((v,i)=>(i/(n-1)*W).toFixed(1)+","+(H-10-v/100*(H-20)).toFixed(1));
+  s.appendChild(el("path",{d:"M"+up.join(" L ")+` L ${W},${H-10} L 0,${H-10} Z`,fill:"#B3B0AD",opacity:.55}));
+  xlabels(s,["2017","2019","2021","2023","2025"],W,H);})();
+
+// 2.5 scatter price vs volume
+(function(){const s=document.getElementById('v25');if(!s)return;const W=520,H=210;
+  const X=v=>60+(v+8)/20*(W-90), Y=v=>H-26-(v-2.0)/1.8*(H-48);
+  s.appendChild(el("line",{x1:X(0),y1:8,x2:X(0),y2:H-22,stroke:"#B3B0AD","stroke-dasharray":"4 3"}));
+  s.appendChild(el("line",{x1:50,y1:Y(2.8),x2:W-8,y2:Y(2.8),stroke:"#B3B0AD","stroke-dasharray":"4 3"}));
+  const pts=[["Nonstore",8.1,3.0,26,"#1F3864"],["Gen. merch.",4.2,2.9,19,"#1F3864"],["Food & bev.",3.1,2.9,20,"#1F3864",-14],
+             ["Gasoline",-4.9,2.7,15,"#C0392B"],["Dept. stores",-2.4,2.8,9,"#C0392B"],["Clothing",1.8,2.6,12,"#2E74B5"],["Food svc.",5.6,3.4,18,"#1B9E8F"]];
+  pts.forEach(p=>{s.appendChild(el("circle",{cx:X(p[1]),cy:Y(p[2]),r:p[3]/2.3,fill:p[4],opacity:.72}));
+    s.appendChild(txt(p[0],X(p[1]),Y(p[2])-p[3]/2.3-3+(p[5]||0),{"text-anchor":"middle","font-size":"8.5"}));});
+  s.appendChild(txt("Sector Sales YoY % \u2192",W/2,H-4,{"text-anchor":"middle","font-size":"9"}));
+  s.appendChild(txt("\u2190 price share of growth (pp)",6,16,{"font-size":"9"}));
+  s.appendChild(txt("median 2.8pp",W-12,Y(2.8)-4,{"font-size":"8","text-anchor":"end",fill:"#B3B0AD"}));})();
+
+// ---- page 3 ----
+const cases=[100,101,103,104,106,107,108,118,112,110,111,112,113,114,115,114,113,114,115,116,117,118,118,119,120,121,121,122,123,124,124,125,126,127,128,128,129,130,131];
+const onprem=[25.1,25.0,25.2,25.1,25.3,25.0,24.9,8.2,11.4,14.8,16.2,17.0,16.1,17.2,17.8,18.0,18.1,18.0,17.9,18.1,18.2,18.0,18.1,18.2,18.1,18.2,18.3,18.2,18.1,18.2,18.2,18.3,18.2,18.2,18.3,18.2,18.2,18.2,18.2];
+const keg=[6.4,6.3,6.5,6.4,6.5,6.3,6.2,1.1,2.0,3.0,3.4,3.6,3.3,3.6,3.8,3.9,3.9,3.9,3.8,3.9,3.9,3.9,3.9,4.0,3.9,4.0,4.0,3.9,3.9,4.0,4.0,4.0,3.9,4.0,4.0,4.0,3.9,4.0,4.0];
+spark('s31',cases,"#2E74B5");
+
+(function(){const s=document.getElementById('v35'),W=470,H=160;gridlines(s,W,H,4);
+  const loc=[2.0,2.2,1.8,2.4,2.1,1.9,2.2,9.1,3.4,1.2,1.8,2.0,2.2,2.4,2.1,1.9,2.3,2.5,2.2,2.0,2.4,2.6,2.3,2.1,2.5,2.4,2.2,2.6,2.4,2.3,2.5,2.4,2.6,2.5,2.4,2.5,2.4,2.4,2.4];
+  const nat=[1.4,1.6,1.2,1.7,1.5,1.3,1.6,7.8,2.1,0.4,0.9,1.1,0.8,-0.4,-1.2,-0.8,0.2,0.9,1.2,1.0,1.3,1.5,1.2,1.1,1.4,1.3,1.1,1.5,1.3,1.2,1.4,1.3,1.5,1.4,1.3,1.4,1.3,1.3,1.3];
+  refline(s,W,H,-3,10,0,"#B3B0AD","0%");
+  poly(s,nat,W,H,-3,10,"#1B9E8F",{w:2});poly(s,loc,W,H,-3,10,"#1F3864",{w:2.4});
+  xlabels(s,YR,W,H);})();
+
+(function(){const s=document.getElementById('v36'),W=360,H=160;
+  bars(s,[["Liquor",2.4,"#1E7B34"],["Wine",1.6,"#1E7B34"],["Beer",-0.8,"#C0392B"],["Kegs",-4.2,"#C0392B"],["Non-Alc",3.1,"#1E7B34"]],
+       W,H,"#1F3864",{diverge:true,max:5,bh:13,fmt:v=>(v>0?"+":"")+v.toFixed(1)+" pp"});})();
+
+(function(){const s=document.getElementById('v39'),W=240,H=120;
+  const off=cases.map((v,i)=>v*(100-onprem[i])/100), on=cases.map((v,i)=>v*onprem[i]/100);
+  const n=off.length,Y=v=>H-14-(v/140)*(H-24);
+  const upTop=off.map((v,i)=>(i/(n-1)*W).toFixed(1)+","+Y(v).toFixed(1));
+  s.appendChild(el("path",{d:"M"+upTop.join(" L ")+` L ${W},${H-14} L 0,${H-14} Z`,fill:"#1F3864",opacity:.85}));
+  const tot=off.map((v,i)=>v+on[i]);
+  const t2=tot.map((v,i)=>(i/(n-1)*W).toFixed(1)+","+Y(v).toFixed(1));
+  const b2=off.map((v,i)=>(i/(n-1)*W).toFixed(1)+","+Y(v).toFixed(1)).reverse();
+  s.appendChild(el("path",{d:"M"+t2.join(" L ")+" L "+b2.join(" L ")+" Z",fill:"#C8860A",opacity:.9}));
+  vline(s,H,7/(n-1)*W,"#C0392B","Mar 2020",14);
+  s.appendChild(txt("off-premise",4,H-18,{"font-size":"7.5",fill:"#fff"}));})();
+
+(function(){const s=document.getElementById('v310'),W=240,H=120;
+  const d=onprem.map(v=>v-25.1);
+  refline(s,W,H,-20,4,0,"#B3B0AD","2019 base",14);
+  poly(s,d,W,H,-20,4,"#1F3864",{w:2,pad:14});
+  vline(s,H,7/(d.length-1)*W,"#C0392B","Mar 2020",14);})();
+
+(function(){const s=document.getElementById('v311'),W=240,H=120;
+  poly(s,keg,W,H,0,8,"#1B9E8F",{w:2.2,pad:14,fill:"#1B9E8F",fillOpacity:.2});
+  vline(s,H,7/(keg.length-1)*W,"#C0392B","Mar 2020",14);})();
+
+(function(){const s=document.getElementById('v312'),W=240,H=120;
+  const fs=[3,3,3,-28,22,9,4,3,3,3,3,3,3];
+  const lq=[2,2,2,20,-2,1,2,2,2,2,2,2,2];
+  refline(s,W,H,-32,26,0,"#B3B0AD","",14);
+  poly(s,fs,W,H,-32,26,"#C8860A",{w:2,pad:14});
+  poly(s,lq,W,H,-32,26,"#1F3864",{w:2,pad:14});
+  s.appendChild(txt("722 food svc",4,14,{"font-size":"7.5",fill:"#C8860A"}));
+  s.appendChild(txt("4453 liquor",4,24,{"font-size":"7.5",fill:"#1F3864"}));})();
+
+</script>
+</body>
+</html>
