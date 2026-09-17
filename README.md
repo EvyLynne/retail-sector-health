@@ -28,7 +28,7 @@ from national macro conditions to item-level physical movement.
 ## Repository map
 | Folder | Contents |
 |---|---|
-| docs/ | Numbered document set (00, 01, 02, 12, 13, 14, 15, 20) |
+| docs/ | Numbered documentation set (00, 01, 02, 12, 13, 14, 15, 20) |
 | sql/ | Warehouse build scripts, run 01 through 08 in order |
 | powerquery/ | M source for the API and file queries |
 | dax/ | Measure catalog by display folder |
