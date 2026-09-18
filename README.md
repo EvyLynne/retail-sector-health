@@ -11,6 +11,9 @@ from national macro conditions to item-level physical movement.
 ## Data model
 ![Star schema](assets/model_view.png)
 
+## Semantic model
+![PBI Semantic schema](assets/fig_modelview.png)
+
 ## Pipeline diagram
 ![Pipeline diagram](assets/pipeline_view.png)
  
