@@ -3,8 +3,8 @@
 The numbered document set. Everything a human reads in lifecycle sequence
 lives here; nothing a system consumes does.
  
-| Doc | File | What it answers |
-|---|---|---|
+| Doc | File | What it answers | 
+|---|---|---|---|---|
 | 00 | 00_Development_Environment_and_Source_Control_Setup_Guide.docx | Where does the work live? |
 | 01 | 01_Project_Plan_Retail_Sector_Health.docx | What are we building? |
 | 02 | 02_Data_Setup_and_Semantic_Model_Guide.docx | How does data get in? |
