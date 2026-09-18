@@ -3,7 +3,7 @@
 This repository version-controls the U.S. Retail Sector Health project end to
 end: documents, SQL warehouse scripts, Power Query and DAX source, the Power BI
 semantic model and three reports (binary and PBIP text form), and screenshots.
-Full setup detail is in `docs/00_GitHub_Development_Guide.docx`.
+Full setup detail is in `docs/00_Development_Environment_and_Source_Control_Setup_Guide.docx`.
  
 ## Architecture in one line
 One published semantic model; three live-connected thin reports. Measures are
