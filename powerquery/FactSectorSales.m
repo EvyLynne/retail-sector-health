@@ -5,7 +5,7 @@
 // QUERY        FactSectorSales
 // LOADS TO     FactSectorSales (fact table)
 // SOURCE       document 02 section 3.5
-// DEPENDS ON   Parameters pCensusKey, pStartPeriod, pEndPeriod
+// DEPENDS ON   Parameters pCensusKey, pStartPeriod
 //
 // NOTE  pCensusKey is referenced as a parameter and never inlined. Search
 // NOTE  the PBIP text for "key=" before the first push - document 00
@@ -17,7 +17,7 @@
 // ========================================================================
 
 let
-    // Parameters: pCensusKey, pStartPeriod, pEndPeriod
+    // Parameters: pCensusKey, pStartPeriod
 
     Fields =
         "cell_value,category_code,data_type_code,seasonally_adj,time_slot_name",
@@ -36,7 +36,7 @@ let
                     [
                         get            = Fields,
                         #"for"         = "us:*",
-                        time           = "from " & pStartPeriod & " to " & pEndPeriod,
+                        time           = "from " & pStartPeriod,  // open-ended: through the latest published month
                         category_code  = CategoryList,
                         data_type_code = "SM",
                         seasonally_adj = "yes",

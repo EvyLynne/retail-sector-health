@@ -8,6 +8,8 @@ warehouse_and_retail_sales*
 *.key
 secrets.json
 **/apikey*.txt
+# PBIP parameters file: pCensusKey is stored here in plain text
+**/*.SemanticModel/definition/expressions.tmdl
  
 # -- Power BI local & cache files (PBIP) ------------------
 **/.pbi/localSettings.json

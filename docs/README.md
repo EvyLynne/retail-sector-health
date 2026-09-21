@@ -16,6 +16,7 @@ lives here; nothing a system consumes does.
 | 21 | 21_Development_Checklist.xlsx | Was this step completed? Is this step necessary?  How much is completed? |
 | 22 | 22_Validation_Results.xlsx | Did the seventeen checks pass, on what date, with what numbers? |
 | 23 | 23_Glossary.docx | What does this term mean here? |
+| 25 | 25_Validation_Timing_Guide.docx | When do I validate, and what? |
  
 Read 00 first. It is numbered 00 because the repository has to exist
 before anything else in the project does.
