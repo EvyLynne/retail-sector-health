@@ -2,14 +2,14 @@
 // FactItemMovement.m
 // U.S. Retail Sector Health - Power Query source
 //
-// QUERY        FactItemMovement and the SQL Server dimensions
-// LOADS TO     FactItemMovement, DimItem, DimSupplier, DimDate
-// SOURCE       document 02 section 7.1
-// DEPENDS ON   The warehouse built by sql/01 through sql/08
+// QUERY        DimItem (dw.vw_Item merged with the item-type map)
+// LOADS TO     DimItem (dimension)
+// SOURCE       document 02 section 6.3
+// DEPENDS ON   dw.vw_Item from sql/08, and pRefMappingsPath -> reference/RefMappings.xlsx
 //
-// NOTE  Reads dw.vw_ItemMovement, never a base table. This is the only
-// NOTE  source that requires the on-premises gateway to refresh in the
-// NOTE  Service.
+// NOTE  Reads a view, never a base table. Both of its sources are local -
+// NOTE  SQL Server and a file share - so it refreshes in the Service only
+// NOTE  through the on-premises gateway.
 //
 // This folder MIRRORS the semantic model; it is not the model. Edit in
 // Power BI Desktop, then paste the Advanced Editor text back here. The
@@ -21,7 +21,7 @@ let
     ItemView = Source{[Schema = "dw", Item = "vw_Item"]}[Data],
 
     Wb       = Excel.Workbook(
-                   File.Contents("C:\Data\RetailEconomics\RefMappings.xlsx"),
+                   File.Contents(pRefMappingsPath),
                    null, true
                ),
     TypeMap  = Wb{[Item = "tbl_ItemTypeMap", Kind = "Table"]}[Data],

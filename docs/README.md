@@ -15,6 +15,7 @@ lives here; nothing a system consumes does.
 | 20 | 20_Data_Dictionary.xlsx | What is this column or measure? |
 | 21 | 21_Development_Checklist.xlsx | Was this step completed? Is this step necessary?  How much is completed? |
 | 22 | 22_Validation_Results.xlsx | Did the seventeen checks pass, on what date, with what numbers? |
+| 23 | 23_Glossary.docx | What does this term mean here? |
  
 Read 00 first. It is numbered 00 because the repository has to exist
 before anything else in the project does.

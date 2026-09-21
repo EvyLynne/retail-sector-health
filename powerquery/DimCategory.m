@@ -5,10 +5,12 @@
 // QUERY        DimCategory
 // LOADS TO     DimCategory (dimension)
 // SOURCE       document 02 section 6.2
-// DEPENDS ON   RefMappings.xlsx in reference/
+// DEPENDS ON   Parameter pRefMappingsPath -> reference/RefMappings.xlsx
 //
 // NOTE  Binds to a NAMED TABLE, not a sheet range. A range shifts the
-// NOTE  moment a row is inserted above it.
+// NOTE  moment a row is inserted above it. The workbook location comes
+// NOTE  from pRefMappingsPath, set to its UNC path - document 02 section
+// NOTE  6.1.
 //
 // This folder MIRRORS the semantic model; it is not the model. Edit in
 // Power BI Desktop, then paste the Advanced Editor text back here. The
@@ -17,7 +19,7 @@
 
 let
     Source   = Excel.Workbook(
-                   File.Contents("C:\Data\RetailEconomics\RefMappings.xlsx"),
+                   File.Contents(pRefMappingsPath),
                    null, true
                ),
 
