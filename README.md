@@ -7,6 +7,9 @@ from national macro conditions to item-level physical movement.
 ![R1 Macro Environment](assets/r1_p1_macro.png)
 ![R2 Recession Resistance](assets/r2_p1_stress.png)
 ![R3 Assortment Concentration](assets/r3_p1_assortment.png)
+
+## Power BI Files structure
+![Star schema](assets/fig_filesplit.png)
  
 ## Data model
 ![Star schema](assets/model_view.png)
@@ -15,7 +18,7 @@ from national macro conditions to item-level physical movement.
 ![PBI Semantic schema](assets/fig_modelview.png)
 
 ## Pipeline diagram
-![Pipeline diagram](assets/pipeline_view.png)
+![Pipeline diagram](assets/fig_pipeline.png)
  
 ## Highlights
 - Three ingestion patterns in one model: keyed REST API (Census MARTS),
