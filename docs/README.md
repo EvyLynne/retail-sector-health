@@ -14,14 +14,18 @@ lives here; nothing a system consumes does.
 | 15 | 15_Report_Build_Instructions.docx | How is each visual built? |
 | 20 | 20_Data_Dictionary.xlsx | What is this column or measure? |
 | 21 | 21_Development_Checklist.xlsx | Was this step completed? Is this step necessary?  How much is completed? |
+| 22 | 22_Validation_Results.xlsx | Did the seventeen checks pass, on what date, with what numbers? |
  
 Read 00 first. It is numbered 00 because the repository has to exist
 before anything else in the project does.
  
-Numbering is gapped on purpose. So later documents slot in without renumbering anything already cited.
+Numbering is gapped on purpose. 05, 24 and 30 are reserved, so a
+later document slots in without renumbering anything already cited.
  
 ## Rules
 - Never renumber a delivered document. Other documents cite it by number.
 - The three .html mockups are self-contained and can be published with
   GitHub Pages with no build step.
+- Documents are committed with git from the local clone. Document 00
+  section 8 covers the GitHub website upload as a fallback.
  

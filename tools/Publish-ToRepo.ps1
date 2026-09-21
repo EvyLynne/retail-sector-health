@@ -87,7 +87,7 @@ $Routes = @(
     [pscustomobject]@{ Pattern = '*.dax';                         Folder = 'dax'        }
     [pscustomobject]@{ Pattern = '*.pbix';                        Folder = 'pbix'       }
     [pscustomobject]@{ Pattern = 'RefMappings.xlsx';              Folder = 'reference'  }
-    [pscustomobject]@{ Pattern = 'Publish-ToRepo.ps1';           Folder = 'tools'      }
+    [pscustomobject]@{ Pattern = 'Publish-*.ps1';                 Folder = 'tools'      }
 )
 
 # Never considered, whatever the routes say.
