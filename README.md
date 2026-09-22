@@ -62,6 +62,12 @@ and recorded rather than assumed.
 - **Re-validation after the build.** A data reload, an edited measure or
   a changed visual each has a defined set of checks to re-run, so the
   reports stay correct after the day they were finished.
+- **A written procedure per check.** Each of the seventeen checks has
+  its own step-by-step document in [docs/validation/](docs/validation/),
+  V01 through V17, written for someone who has never run it: every
+  click, the query to paste, how to decide pass or fail, and what to do
+  when it fails. Each exists as a .docx to read and an .xlsx with a
+  Pass/Fail drop-down on every step.
 - **Checks anyone can repeat.** The SQL and DAX checks are written out
   ready to paste, so a reviewer can re-run them and get the same answer.
 
@@ -79,7 +85,8 @@ and recorded rather than assumed.
 ### How the work is documented
 - A numbered document set in docs/ runs from the project plan (01)
   through data setup (02), report specifications (15), the data
-  dictionary (20) and glossary (23) to validation (22, 25, 26).
+  dictionary (20) and glossary (23) to validation (22, 25, 26), with
+  the per-check procedures in docs/validation/.
 - Design decisions are recorded where they are made, with the reason -
   why the date dimension is monthly, why cases and dollars are never
   compared as levels, why the reports carry no measures of their own.
@@ -109,6 +116,7 @@ exists to find.
 | Folder | Contents |
 |---|---|
 | docs/ | Numbered documentation set (00, 01, 02, 12, 13, 14, 15, 20, 21, 22, 23, 25, 26) |
+| docs/validation/ | One step-by-step procedure per check, V01 to V17, in .docx and .xlsx |
 | sql/ | Warehouse build scripts, run 01 through 08 in order |
 | powerquery/ | M source for the API and file queries |
 | dax/ | Measure catalog by display folder |

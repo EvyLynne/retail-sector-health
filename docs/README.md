@@ -18,6 +18,7 @@ lives here; nothing a system consumes does.
 | 23 | 23_Glossary.docx | What does this term mean here? |
 | 25 | 25_Validation_Timing_Guide.docx | When do I validate, and what? |
 | 26 | 26_Validation_Timing_Checklist.xlsx | Has each gate passed? What was re-validated, and when? |
+| -- | validation/ | How do I actually run check N, step by step? |
  
 Read 00 first. It is numbered 00 because the repository has to exist
 before anything else in the project does.
@@ -25,8 +26,22 @@ before anything else in the project does.
 Numbering is gapped on purpose. 05, 24 and 30 are reserved, so a
 later document slots in without renumbering anything already cited.
  
+## validation/
+
+One step-by-step procedure per check, for the seventeen pre-publication
+checks in document 02 section 9. V01 to V17, each in two formats with the
+same content: a .docx to read and print, and an .xlsx with a Pass/Fail
+drop-down on every tick table. Written for someone who has never run the
+check: every click, every query, how to decide pass or fail, how to record
+the result, and what to do if it fails.
+
+The subfolder has its own README with the check-to-procedure table. Results
+still go in document 22; the V files are the instructions, not the record.
+
 ## Rules
 - Never renumber a delivered document. Other documents cite it by number.
+- The V files in validation/ are numbered by check, not by document number.
+  V07 is the procedure for check 7. They are outside the gapped numbering.
 - The three .html mockups are self-contained and can be published with
   GitHub Pages with no build step.
 - Documents are committed with git from the local clone. Document 00
