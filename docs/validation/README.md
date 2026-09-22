@@ -9,6 +9,7 @@ Each procedure exists in two formats with the same content:
 
 - `.docx` - to read and print
 - `.xlsx` - the same steps, with a Pass/Fail drop-down on each tick table
+  (V07, V08, V15, V16 and V17 have tick tables; the others record one result)
 
 Results are recorded in `docs/22_Validation_Results.xlsx` and ticked in
 `docs/26_Validation_Timing_Checklist.xlsx`. When to run each check is
@@ -24,7 +25,7 @@ Results are recorded in `docs/22_Validation_Results.xlsx` and ticked in
 | 6 | V06_Date_Relationship_Integrity | Model | Power BI Desktop, DAX query view |
 | 7 | V07_Measure_Unit_Consistency | Report | Power BI Desktop, the three report files |
 | 8 | V08_Cases_vs_Dollars_Separation | Report | Power BI Desktop, the three report files |
-| 9 | V09_Channel_Baseline_Integrity | Model | Power BI Desktop - DAX query view in the model file, then report R1 |
+| 9 | V09_Channel_Baseline_Integrity | Model | Power BI Desktop - DAX query view in the model file, then reports R1 and R2 |
 | 10 | V10_Channel_Story_National_Counterpart | Model | Power BI Desktop, DAX query view; then report R1 |
 | 11 | V11_Negative_Value_Handling | Model | Power BI Desktop - DAX query view, then report R1 |
 | 12 | V12_Lifecycle_Columns_Current | Model | SSMS 22, database RetailEconomics |

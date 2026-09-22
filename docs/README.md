@@ -31,7 +31,8 @@ later document slots in without renumbering anything already cited.
 One step-by-step procedure per check, for the seventeen pre-publication
 checks in document 02 section 9. V01 to V17, each in two formats with the
 same content: a .docx to read and print, and an .xlsx with a Pass/Fail
-drop-down on every tick table. Written for someone who has never run the
+drop-down on every tick table (the visual-by-visual tables in V07, V08,
+V15, V16 and V17; the other procedures record a single result). Written for someone who has never run the
 check: every click, every query, how to decide pass or fail, how to record
 the result, and what to do if it fails.
 
