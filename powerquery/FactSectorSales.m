@@ -11,6 +11,9 @@
 // NOTE  the PBIP text for "key=" before the first push - document 00
 // NOTE  section 12.
 //
+// VERIFIED 2026-09-22 against the live endpoint: 21 category codes
+// discovered, 2,940 rows, 140 months per code, 2015-01 through 2026-08.
+//
 // This folder MIRRORS the semantic model; it is not the model. Edit in
 // Power BI Desktop, then paste the Advanced Editor text back here. The
 // authoritative copy is pbip/RetailEconomics_Model/.
@@ -22,31 +25,135 @@ let
     Fields =
         "cell_value,category_code,data_type_code,seasonally_adj,time_slot_name",
 
-    CategoryList =
-        "44X72,44000,441,442,443,444,445,4453,446,447,448,"
-      & "451,452,4522,452311,453,454,4541,722",
+    Key = Text.Trim(pCensusKey),
 
-    Source =
-        Json.Document(
-            Web.Contents(
-                "https://api.census.gov",
-                [
-                    RelativePath = "data/timeseries/eits/marts",
-                    Query =
+    // ------------------------------------------------------------------
+    // Shared caller. This endpoint answers with an EMPTY body - not an HTTP
+    // error - for a comma-separated category_code list and for any code it
+    // does not publish. Json.Document on an empty body raises
+    // "DataFormat.Error: We reached the end of the buffer", so every response
+    // is inspected before it is parsed and unusable ones return null.
+    // ------------------------------------------------------------------
+    Call = (q as record) as nullable list =>
+        let
+            Response =
+                Binary.Buffer(
+                    Web.Contents(
+                        "https://api.census.gov",
+                        [
+                            RelativePath = "data/timeseries/eits/marts",
+                            Query = q,
+                            ManualStatusHandling = {204, 400, 401, 403, 404, 429, 500, 502, 503}
+                        ]
+                    )
+                ),
+            Body   = Text.Trim(Text.FromBinary(Response)),
+            Parsed = if Text.StartsWith(Body, "[") then Json.Document(Body) else null
+        in
+            if Parsed = null or List.Count(Parsed) < 2 then null else Parsed,
+
+    // The API echoes predicate columns - data_type_code and seasonally_adj on
+    // every call, category_code on the history calls - so the header carries
+    // repeats. Suffix them; Cleaned keeps only what the model needs.
+    ToTable = (parsed as list) as table =>
+        let
+            RawHeader = List.First(parsed),
+            Header =
+                List.Accumulate(
+                    RawHeader,
+                    {},
+                    (seen, col) =>
+                        seen
+                      & { if List.Contains(seen, col)
+                          then col & "_echo" & Text.From(List.Count(seen))
+                          else col }
+                )
+        in
+            Table.FromRows(List.Skip(parsed, 1), Header),
+
+    // ------------------------------------------------------------------
+    // 1. DISCOVERY - one recent month, no category_code predicate, so the
+    //    response names every code the advance survey currently publishes.
+    //    cell_value must be in get: the API rejects a predicate-only get with
+    //    "missing required variable/predicate: cell_value". Advance estimates
+    //    lag by weeks, so recent months are tried until one returns data.
+    // ------------------------------------------------------------------
+    MonthText = (offset as number) as text =>
+        Date.ToText(Date.AddMonths(Date.From(DateTime.FixedLocalNow()), - offset), "yyyy-MM"),
+
+    Discovery =
+        List.First(
+            List.RemoveNulls(
+                List.Transform(
+                    {1, 2, 3, 4, 5},
+                    each Call(
+                        [
+                            get            = Fields,
+                            #"for"         = "us:*",
+                            time           = MonthText(_),
+                            data_type_code = "SM",
+                            seasonally_adj = "yes",
+                            key            = Key
+                        ]
+                    )
+                )
+            ),
+            null
+        ),
+
+    PublishedCodes =
+        if Discovery = null then
+            error Error.Record(
+                "Census.DiscoveryFailed",
+                "No category codes returned for any of the last five months. Check pCensusKey and the api.census.gov credential."
+            )
+        else
+            List.Sort(
+                List.Distinct(
+                    List.Transform(
+                        Table.Column(
+                            Table.SelectRows(
+                                ToTable(Discovery),
+                                each [data_type_code] = "SM"
+                            ),
+                            "category_code"
+                        ),
+                        Text.From
+                    )
+                )
+            ),
+
+    // ------------------------------------------------------------------
+    // 2. HISTORY - one request per discovered code over the open-ended
+    //    range. A code returning nothing is skipped rather than fatal.
+    // ------------------------------------------------------------------
+    GetOne = (cat as text) as nullable table =>
+        let
+            Parsed =
+                Call(
                     [
                         get            = Fields,
                         #"for"         = "us:*",
-                        time           = "from " & pStartPeriod,  // open-ended: through the latest published month
-                        category_code  = CategoryList,
+                        time           = "from " & Text.Trim(pStartPeriod),
+                        category_code  = cat,
                         data_type_code = "SM",
                         seasonally_adj = "yes",
-                        key            = pCensusKey
+                        key            = Key
                     ]
-                ]
-            )
-        ),
+                )
+        in
+            if Parsed = null then null else ToTable(Parsed),
 
-    AsTable = Table.FromRows(List.Skip(Source, 1), List.First(Source)),
+    Returned = List.RemoveNulls(List.Transform(PublishedCodes, GetOne)),
+
+    AsTable =
+        if List.Count(Returned) = 0 then
+            error Error.Record(
+                "Census.NoData",
+                "Codes were discovered but every history request came back empty."
+            )
+        else
+            Table.Combine(Returned),
 
     // time_slot_name arrives as "July 2026"; normalise to a month start.
     AddDate = Table.AddColumn(

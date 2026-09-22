@@ -1,0 +1,23 @@
+table 'JSON Code List - testing'
+	lineageTag: 9d4f207e-0248-4536-8bf9-5788b017d958
+
+	column 'JSON Code List - testing'
+		dataType: string
+		lineageTag: 98e6b2aa-9343-4024-bafd-593e3c385f85
+		summarizeBy: none
+		sourceColumn: JSON Code List - testing
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'JSON Code List - testing' = m
+		mode: import
+		source =
+				let
+				    Source = List.Sort(List.Distinct(Table.Column(FactSectorSales, "category_code")))
+				in
+				    Source
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = List
+

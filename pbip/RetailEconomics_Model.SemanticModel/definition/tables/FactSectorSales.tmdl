@@ -1,0 +1,166 @@
+table FactSectorSales
+	lineageTag: 1b8456c7-c86c-471e-b94a-e1c41889071c
+
+	column DateKey
+		dataType: int64
+		formatString: 0
+		lineageTag: e64c7da9-206e-4cff-b941-213e5b832975
+		summarizeBy: count
+		sourceColumn: DateKey
+
+		annotation SummarizationSetBy = Automatic
+
+	column ReportDate
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 11a08a45-6065-462b-9fbd-9ad918d7a238
+		summarizeBy: none
+		sourceColumn: ReportDate
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column category_code
+		dataType: string
+		lineageTag: 2956afb0-9eff-4ff0-b004-e7d882500ec9
+		summarizeBy: none
+		sourceColumn: category_code
+
+		annotation SummarizationSetBy = Automatic
+
+	column SalesMillionsUSD
+		dataType: int64
+		formatString: 0
+		lineageTag: 9e960f98-2eff-49c4-b46c-446b8df0a09d
+		summarizeBy: sum
+		sourceColumn: SalesMillionsUSD
+
+		annotation SummarizationSetBy = Automatic
+
+	partition FactSectorSales = m
+		mode: import
+		source =
+				let
+				    // Parameters: pCensusKey, pStartPeriod
+				
+				    Fields =
+				        "cell_value,category_code,data_type_code,seasonally_adj,time_slot_name",
+				
+				    CategoryList =
+				        "44X72,44000,441,442,443,444,445,4453,446,447,448,"
+				      & "451,452,4522,452311,453,454,4541,722",
+				
+				    Categories = List.Transform(Text.Split(CategoryList, ","), Text.Trim),
+				
+				    // ONE REQUEST PER CATEGORY CODE, and every response is checked before it
+				    // is parsed. This endpoint answers with an EMPTY body - not an HTTP error
+				    // - for a comma-separated category_code list, and for any code it has no
+				    // data for. Json.Document on an empty body raises
+				    // "DataFormat.Error: We reached the end of the buffer."
+				    GetOne = (cat as text) as nullable table =>
+				        let
+				            Response =
+				                Binary.Buffer(
+				                    Web.Contents(
+				                        "https://api.census.gov",
+				                        [
+				                            RelativePath = "data/timeseries/eits/marts",
+				                            Query =
+				                            [
+				                                get            = Fields,
+				                                #"for"         = "us:*",
+				                                // Open-ended range: through the latest published month.
+				                                time           = "from " & Text.Trim(pStartPeriod),
+				                                category_code  = cat,
+				                                data_type_code = "SM",
+				                                seasonally_adj = "yes",
+				                                key            = Text.Trim(pCensusKey)
+				                            ],
+				                            ManualStatusHandling = {204, 400, 401, 403, 404, 429, 500, 502, 503}
+				                        ]
+				                    )
+				                ),
+				
+				            Body = Text.Trim(Text.FromBinary(Response)),
+				
+				            // A usable payload is a JSON array. Anything else - empty string,
+				            // an HTML error page, a plain-text message - is skipped.
+				            Usable = Text.StartsWith(Body, "["),
+				
+				            Parsed = if Usable then Json.Document(Body) else null,
+				
+				            Result =
+				                if Parsed = null or List.Count(Parsed) < 2 then
+				                    null
+				                else
+				                    let
+				                        // The API echoes predicate columns, so category_code
+				                        // can arrive twice. Suffix repeats; Cleaned drops them.
+				                        RawHeader = List.First(Parsed),
+				                        Header =
+				                            List.Accumulate(
+				                                RawHeader,
+				                                {},
+				                                (seen, col) =>
+				                                    seen
+				                                  & { if List.Contains(seen, col)
+				                                      then col & "_echo" & Text.From(List.Count(seen))
+				                                      else col }
+				                            )
+				                    in
+				                        Table.FromRows(List.Skip(Parsed, 1), Header)
+				        in
+				            Result,
+				
+				    Fetched = List.Transform(Categories, GetOne),
+				
+				    Returned = List.RemoveNulls(Fetched),
+				
+				    AsTable =
+				        if List.Count(Returned) = 0 then
+				            error Error.Record(
+				                "Census.NoData",
+				                "Every category_code request came back empty. Check pCensusKey and run the section 3.4 discovery query."
+				            )
+				        else
+				            Table.Combine(Returned),
+				
+				    // time_slot_name arrives as "July 2026"; normalise to a month start.
+				    AddDate = Table.AddColumn(
+				                  AsTable, "ReportDate",
+				                  each Date.StartOfMonth(Date.From([time_slot_name])),
+				                  type date
+				              ),
+				
+				    AddKey  = Table.AddColumn(
+				                  AddDate, "DateKey",
+				                  each Date.Year([ReportDate]) * 10000
+				                     + Date.Month([ReportDate]) * 100 + 1,
+				                  Int64.Type
+				              ),
+				
+				    Typed   = Table.TransformColumnTypes(
+				                  AddKey,
+				                  {
+				                      {"cell_value",    Int64.Type},
+				                      {"category_code", type text}
+				                  }
+				              ),
+				
+				    // cell_value under data_type_code "SM" is MILLIONS OF DOLLARS.
+				    Renamed = Table.RenameColumns(Typed, {{"cell_value", "SalesMillionsUSD"}}),
+				
+				    Cleaned = Table.SelectColumns(
+				                  Renamed,
+				                  {"DateKey", "ReportDate", "category_code", "SalesMillionsUSD"}
+				              ),
+				
+				    NoNulls = Table.SelectRows(Cleaned, each [SalesMillionsUSD] <> null)
+				in
+				    NoNulls
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

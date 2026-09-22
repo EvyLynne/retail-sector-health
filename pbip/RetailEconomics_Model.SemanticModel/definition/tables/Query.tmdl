@@ -1,0 +1,88 @@
+table Query
+	lineageTag: 3085bb84-3868-446a-bcd6-09074c2595c2
+
+	column Shape
+		dataType: string
+		lineageTag: 17266d46-105d-4f22-90a0-433ff9d98842
+		summarizeBy: none
+		sourceColumn: Shape
+
+		annotation SummarizationSetBy = Automatic
+
+	column Bytes
+		dataType: string
+		lineageTag: dce37122-7a1c-4af9-8925-ce9a802e905b
+		summarizeBy: none
+		sourceColumn: Bytes
+
+		annotation SummarizationSetBy = Automatic
+
+	column First150
+		dataType: string
+		lineageTag: 0755b437-5aa6-4d2b-91e0-7bd037f0f74b
+		summarizeBy: none
+		sourceColumn: First150
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Query = m
+		mode: import
+		source =
+				let
+				    Key = Text.Trim(pCensusKey),
+				
+				    Fields =
+				        "cell_value,category_code,data_type_code,seasonally_adj,time_slot_name",
+				
+				    M = (offset as number) as text =>
+				        Date.ToText(Date.AddMonths(Date.From(DateTime.FixedLocalNow()), - offset), "yyyy-MM"),
+				
+				    Probe = (q as record) as record =>
+				        let
+				            Body =
+				                Text.FromBinary(
+				                    Binary.Buffer(
+				                        Web.Contents(
+				                            "https://api.census.gov",
+				                            [
+				                                RelativePath = "data/timeseries/eits/marts",
+				                                Query = q,
+				                                ManualStatusHandling = {204, 400, 401, 403, 404, 429, 500, 502, 503}
+				                            ]
+				                        )
+				                    )
+				                )
+				        in
+				            [Bytes = Text.Length(Body), First150 = Text.Start(Body, 150)],
+				
+				    Shapes =
+				    {
+				        [ Name = "A - doc 3.4 shape: all fields, no predicates",
+				          Q = [get = Fields, #"for" = "us:*", time = M(2), key = Key] ],
+				
+				        [ Name = "B - all fields + SM and adj predicates",
+				          Q = [get = Fields, #"for" = "us:*", time = M(2),
+				               data_type_code = "SM", seasonally_adj = "yes", key = Key] ],
+				
+				        [ Name = "C - predicates only in get (what failed)",
+				          Q = [get = "category_code,data_type_code", #"for" = "us:*", time = M(2),
+				               data_type_code = "SM", seasonally_adj = "yes", key = Key] ],
+				
+				        [ Name = "D - open-ended range, all fields, no predicates",
+				          Q = [get = Fields, #"for" = "us:*", time = "from " & M(3), key = Key] ]
+				    },
+				
+				    Out =
+				        Table.FromRecords(
+				            List.Transform(
+				                Shapes,
+				                (s) => Record.Combine({ [Shape = s[Name]], Probe(s[Q]) })
+				            )
+				        )
+				in
+				    Out
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

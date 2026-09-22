@@ -7,11 +7,21 @@ model Model
 		legacyRedirects
 		returnErrorValuesAsNull
 
+/// Errors in queries that were loaded on 9/22/2026 5:24:49 PM.
+queryGroup 'Query Errors - 9/22/2026 5:24:49 PM'
+
+	annotation PBI_QueryGroupOrder = 0
+
 annotation __PBI_TimeIntelligenceEnabled = 0
 
 annotation PBI_ProTooling = ["DevMode"]
 
-annotation PBI_QueryOrder = ["pCensusKey","pStartPeriod"]
+annotation PBI_QueryOrder = ["pCensusKey","pStartPeriod","Discovery - Not used in prod","JSON Columns - testing","FactSectorSales","JSON Code Usage - testing","Query","NewFactSectorSales","JSON Code List - testing"]
+
+ref table FactSectorSales
+ref table Query
+ref table NewFactSectorSales
+ref table 'JSON Code List - testing'
 
 ref cultureInfo en-US
 

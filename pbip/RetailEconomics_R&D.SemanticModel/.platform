@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "RetailEconomics_R&D"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "dc14e26f-7175-4acd-89f2-1270d8f882a3"
+  }
+}
