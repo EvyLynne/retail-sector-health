@@ -17,6 +17,7 @@ lives here; nothing a system consumes does.
 | 22 | 22_Validation_Results.xlsx | Did the seventeen checks pass, on what date, with what numbers? |
 | 23 | 23_Glossary.docx | What does this term mean here? |
 | 25 | 25_Validation_Timing_Guide.docx | When do I validate, and what? |
+| 26 | 26_Validation_Timing_Checklist.xlsx | Has each gate passed? What was re-validated, and when? |
  
 Read 00 first. It is numbered 00 because the repository has to exist
 before anything else in the project does.
