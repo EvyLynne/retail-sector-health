@@ -5,10 +5,8 @@ from national macro conditions to item-level physical movement.
 
 This project analyzes the health of the U.S. retail sector with
 reproducible data workflows, a validated semantic model and a complete
-documentation set. It is built by one developer, end to end - from the
-SQL Server warehouse to the published reports - and it is designed to
-show that working independently does not mean working without QA,
-review or documentation.
+documentation set. It is built by one developer, end to end - from ingesting data from multiple sources to the published reports - and it is designed to
+show that working independently does not mean working without QA, review or documentation and does not mean delivering a substandard product. 
  
 ## Reports
 ![R1 Macro Environment](assets/r1_p1_macro.png)
