@@ -1,0 +1,4 @@
+relationship AutoDetected_274fd2a7-3ea8-4171-ae19-c376b6206372
+	fromColumn: FactSectorSales.category_code
+	toColumn: Query.CategoryCode
+

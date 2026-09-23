@@ -1,27 +1,43 @@
 table Query
-	lineageTag: 3085bb84-3868-446a-bcd6-09074c2595c2
+	lineageTag: e9c6b608-7bb3-48bc-a34f-f7969a1cf3d6
 
-	column Shape
+	column CategoryCode
 		dataType: string
-		lineageTag: 17266d46-105d-4f22-90a0-433ff9d98842
+		lineageTag: 7d0e78f2-5727-4e0b-8896-09d982ab9e95
 		summarizeBy: none
-		sourceColumn: Shape
+		sourceColumn: CategoryCode
 
 		annotation SummarizationSetBy = Automatic
 
-	column Bytes
+	column CategoryName
 		dataType: string
-		lineageTag: dce37122-7a1c-4af9-8925-ce9a802e905b
+		lineageTag: 48b6f622-0020-474c-a7fa-c793efe74606
 		summarizeBy: none
-		sourceColumn: Bytes
+		sourceColumn: CategoryName
 
 		annotation SummarizationSetBy = Automatic
 
-	column First150
+	column CategoryGroup
 		dataType: string
-		lineageTag: 0755b437-5aa6-4d2b-91e0-7bd037f0f74b
+		lineageTag: 96a50ac6-8596-4b72-b43d-c77621c7d4ed
 		summarizeBy: none
-		sourceColumn: First150
+		sourceColumn: CategoryGroup
+
+		annotation SummarizationSetBy = Automatic
+
+	column DisplayOrder
+		dataType: string
+		lineageTag: 12c3d4a8-9a6a-411a-a2fb-9b983682142b
+		summarizeBy: none
+		sourceColumn: DisplayOrder
+
+		annotation SummarizationSetBy = Automatic
+
+	column IsAggregate
+		dataType: string
+		lineageTag: 71e47309-f09b-4c8a-b438-8ddf9a53222f
+		summarizeBy: none
+		sourceColumn: IsAggregate
 
 		annotation SummarizationSetBy = Automatic
 
@@ -29,58 +45,81 @@ table Query
 		mode: import
 		source =
 				let
-				    Key = Text.Trim(pCensusKey),
+				    Source   = Excel.Workbook(File.Contents(pRefMappingsPath), null, true),
+				    Tbl      = Source{[Item = "tbl_CategoryMap", Kind = "Table"]}[Data],
+				    Typed    = Table.TransformColumnTypes(
+				                   Tbl,
+				                   {
+				                       {"CategoryCode",  type text},
+				                       {"CategoryName",  type text},
+				                       {"CategoryGroup", type text},
+				                       {"DisplayOrder",  Int64.Type},
+				                       {"IsAggregate",   type logical}
+				                   }
+				               ),
 				
-				    Fields =
-				        "cell_value,category_code,data_type_code,seasonally_adj,time_slot_name",
+				    // Every code the API returned, mapped or not. The workbook supplies
+				    // labels; it does not decide which codes exist.
+				    ApiCodes = Table.Distinct(Table.SelectColumns(FactSectorSales, {"category_code"})),
 				
-				    M = (offset as number) as text =>
-				        Date.ToText(Date.AddMonths(Date.From(DateTime.FixedLocalNow()), - offset), "yyyy-MM"),
+				    Joined   = Table.NestedJoin(ApiCodes, {"category_code"}, Typed, {"CategoryCode"},
+				                                "m", JoinKind.LeftOuter),
+				    Expanded = Table.ExpandTableColumn(
+				                   Joined, "m",
+				                   {"CategoryName", "CategoryGroup", "DisplayOrder", "IsAggregate"}
+				               ),
 				
-				    Probe = (q as record) as record =>
-				        let
-				            Body =
-				                Text.FromBinary(
-				                    Binary.Buffer(
-				                        Web.Contents(
-				                            "https://api.census.gov",
-				                            [
-				                                RelativePath = "data/timeseries/eits/marts",
-				                                Query = q,
-				                                ManualStatusHandling = {204, 400, 401, 403, 404, 429, 500, 502, 503}
-				                            ]
-				                        )
-				                    )
-				                )
-				        in
-				            [Bytes = Text.Length(Body), First150 = Text.Start(Body, 150)],
+				    // Fallbacks for a code with no row in the workbook. A letter inside the
+				    // code marks a Census "excluding" aggregate (44W72, 44Y72, 44Z72), which
+				    // must stay out of share denominators even before anyone labels it.
+				    Filled =
+				        Table.ReplaceValue(
+				            Expanded,
+				            each [CategoryName],
+				            each if [CategoryName] = null or [CategoryName] = ""
+				                 then "(" & [category_code] & ") unmapped"
+				                 else [CategoryName],
+				            Replacer.ReplaceValue, {"CategoryName"}
+				        ),
 				
-				    Shapes =
-				    {
-				        [ Name = "A - doc 3.4 shape: all fields, no predicates",
-				          Q = [get = Fields, #"for" = "us:*", time = M(2), key = Key] ],
+				    FilledGroup =
+				        Table.ReplaceValue(
+				            Filled,
+				            each [CategoryGroup],
+				            each if [CategoryGroup] = null or [CategoryGroup] = ""
+				                 then "Unclassified"
+				                 else [CategoryGroup],
+				            Replacer.ReplaceValue, {"CategoryGroup"}
+				        ),
 				
-				        [ Name = "B - all fields + SM and adj predicates",
-				          Q = [get = Fields, #"for" = "us:*", time = M(2),
-				               data_type_code = "SM", seasonally_adj = "yes", key = Key] ],
+				    FilledOrder =
+				        Table.ReplaceValue(
+				            FilledGroup,
+				            each [DisplayOrder],
+				            each if [DisplayOrder] = null then 9000 else [DisplayOrder],
+				            Replacer.ReplaceValue, {"DisplayOrder"}
+				        ),
 				
-				        [ Name = "C - predicates only in get (what failed)",
-				          Q = [get = "category_code,data_type_code", #"for" = "us:*", time = M(2),
-				               data_type_code = "SM", seasonally_adj = "yes", key = Key] ],
+				    FilledAgg =
+				        Table.ReplaceValue(
+				            FilledOrder,
+				            each [IsAggregate],
+				            each if [IsAggregate] <> null
+				                 then [IsAggregate]
+				                 else List.Count(List.Select(
+				                          Text.ToList([category_code]),
+				                          each not Value.Is(Value.FromText(_), type number))) > 0,
+				            Replacer.ReplaceValue, {"IsAggregate"}
+				        ),
 				
-				        [ Name = "D - open-ended range, all fields, no predicates",
-				          Q = [get = Fields, #"for" = "us:*", time = "from " & M(3), key = Key] ]
-				    },
+				    Renamed = Table.RenameColumns(FilledAgg, {{"category_code", "CategoryCode"}}),
 				
-				    Out =
-				        Table.FromRecords(
-				            List.Transform(
-				                Shapes,
-				                (s) => Record.Combine({ [Shape = s[Name]], Probe(s[Q]) })
-				            )
-				        )
+				    Final   = Table.SelectColumns(
+				                  Renamed,
+				                  {"CategoryCode", "CategoryName", "CategoryGroup", "DisplayOrder", "IsAggregate"}
+				              )
 				in
-				    Out
+				    Final
 
 	annotation PBI_NavigationStepName = Navigation
 
