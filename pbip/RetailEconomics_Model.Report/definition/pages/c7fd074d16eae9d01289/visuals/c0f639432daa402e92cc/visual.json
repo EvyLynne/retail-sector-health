@@ -1,5 +1,5 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "c0f639432daa402e92cc",
   "position": {
     "x": 776.46945182323111,
@@ -22,7 +22,7 @@
                     "Column": {
                       "Expression": {
                         "SourceRef": {
-                          "Entity": "NewFactSectorSales"
+                          "Entity": "FactSectorSales"
                         }
                       },
                       "Property": "category_code"
@@ -50,7 +50,7 @@
               "Column": {
                 "Expression": {
                   "SourceRef": {
-                    "Entity": "NewFactSectorSales"
+                    "Entity": "FactSectorSales"
                   }
                 },
                 "Property": "category_code"

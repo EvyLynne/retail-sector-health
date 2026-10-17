@@ -13,7 +13,7 @@ table 'JSON Code List - testing'
 		mode: import
 		source =
 				let
-				    Source = List.Sort(List.Distinct(Table.Column(NewFactSectorSales, "category_code")))
+				    Source = List.Sort(List.Distinct(Table.Column(FactSectorSales, "category_code")))
 				in
 				    Source
 

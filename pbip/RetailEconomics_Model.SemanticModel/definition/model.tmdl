@@ -16,11 +16,10 @@ annotation __PBI_TimeIntelligenceEnabled = 0
 
 annotation PBI_ProTooling = ["DevMode"]
 
-annotation PBI_QueryOrder = ["pCensusKey","pStartPeriod","Discovery - Not used in prod","JSON Columns - testing","FactSectorSales","JSON Code Usage - testing","Query","NewFactSectorSales","JSON Code List - testing"]
+annotation PBI_QueryOrder = ["pCensusKey","pStartPeriod","Discovery - Not used in prod","JSON Columns - testing","JSON Code Usage - testing","Query","FactSectorSales","JSON Code List - testing"]
 
-ref table FactSectorSales
 ref table Query
-ref table NewFactSectorSales
+ref table FactSectorSales
 ref table 'JSON Code List - testing'
 
 ref cultureInfo en-US
